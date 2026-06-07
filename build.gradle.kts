@@ -32,6 +32,18 @@ subprojects {
             testRuntimeOnly("org.junit.platform:junit-platform-launcher")
         }
 
+        tasks.withType<JavaCompile> {
+            options.encoding = "UTF-8"
+        }
+
+        tasks.withType<Javadoc> {
+            options.encoding = "UTF-8"
+            (options as StandardJavadocDocletOptions).apply {
+                charSet("UTF-8")
+                addBooleanOption("Xdoclint:none", true)
+            }
+        }
+
         tasks.test {
             useJUnitPlatform()
         }

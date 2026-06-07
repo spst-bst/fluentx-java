@@ -5,5 +5,6 @@ include(
     "fluentx-collections",
     "fluentx-strings",
     "fluentx-result",
-    "fluentx-bom"
+    "fluentx-bom",
+    "fluentx-examples"
 )

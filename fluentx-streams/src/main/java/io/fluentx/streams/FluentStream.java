@@ -27,23 +27,42 @@ public final class FluentStream<T> {
 
     // ── Factory methods ───────────────────────────────────────────────────────
 
-    /** Wraps an existing {@link Stream}. */
+    /**
+     * Wraps an existing {@link Stream}.
+     * @param <T>    the element type
+     * @param stream the stream to wrap
+     * @return a new FluentStream backed by the given stream
+     */
     public static <T> FluentStream<T> of(Stream<T> stream) {
         return new FluentStream<>(stream);
     }
 
-    /** Creates a FluentStream from varargs elements. */
+    /**
+     * Creates a FluentStream from varargs elements.
+     * @param <T>      the element type
+     * @param elements the elements to stream
+     * @return a new FluentStream over the given elements
+     */
     @SafeVarargs
     public static <T> FluentStream<T> of(T... elements) {
         return new FluentStream<>(Stream.of(elements));
     }
 
-    /** Creates a FluentStream from any {@link Iterable}. */
+    /**
+     * Creates a FluentStream from any {@link Iterable}.
+     * @param <T>      the element type
+     * @param iterable the iterable to stream
+     * @return a new FluentStream over the given iterable
+     */
     public static <T> FluentStream<T> of(Iterable<T> iterable) {
         return new FluentStream<>(StreamSupport.stream(iterable.spliterator(), false));
     }
 
-    /** Creates an empty FluentStream. */
+    /**
+     * Creates an empty FluentStream.
+     * @param <T> the element type
+     * @return an empty FluentStream
+     */
     public static <T> FluentStream<T> empty() {
         return new FluentStream<>(Stream.empty());
     }
@@ -55,12 +74,14 @@ public final class FluentStream<T> {
      *
      * <pre>{@code
      * FluentStream.of("a", "b", "c").zipWithIndex()
-     * // → Indexed(0, "a"), Indexed(1, "b"), Indexed(2, "c")
+     * // -> Indexed(0, "a"), Indexed(1, "b"), Indexed(2, "c")
      * }</pre>
+     *
+     * @return a stream of {@link Indexed} values pairing each element with its position
      */
-    public Stream<Indexed<T>> zipWithIndex() {
+    public FluentStream<Indexed<T>> zipWithIndex() {
         int[] index = {0};
-        return stream.map(value -> new Indexed<>(index[0]++, value));
+        return of(stream.map(value -> new Indexed<>(index[0]++, value)));
     }
 
     /**
@@ -69,17 +90,21 @@ public final class FluentStream<T> {
      *
      * <pre>{@code
      * FluentStream.of(1, 2, 3).zip(Stream.of("a", "b", "c"))
-     * // → Pair(1,"a"), Pair(2,"b"), Pair(3,"c")
+     * // -> Pair(1,"a"), Pair(2,"b"), Pair(3,"c")
      * }</pre>
+     *
+     * @param <U>   the element type of the other stream
+     * @param other the stream to zip with
+     * @return a stream of {@link Pair} values combining elements by position
      */
-    public <U> Stream<Pair<T, U>> zip(Stream<U> other) {
+    public <U> FluentStream<Pair<T, U>> zip(Stream<U> other) {
         Iterator<T> iterA = stream.iterator();
         Iterator<U> iterB = other.iterator();
         Iterable<Pair<T, U>> iterable = () -> new Iterator<>() {
             @Override public boolean hasNext() { return iterA.hasNext() && iterB.hasNext(); }
             @Override public Pair<T, U> next()  { return new Pair<>(iterA.next(), iterB.next()); }
         };
-        return StreamSupport.stream(iterable.spliterator(), false);
+        return of(StreamSupport.stream(iterable.spliterator(), false));
     }
 
     /**
@@ -88,14 +113,19 @@ public final class FluentStream<T> {
      *
      * <pre>{@code
      * FluentStream.of(1, 2, 3, 4).scan(0, Integer::sum)
-     * // → 0, 1, 3, 6, 10
+     * // -> 0, 1, 3, 6, 10
      * }</pre>
+     *
+     * @param <R>         the result type
+     * @param identity    the initial accumulator value (emitted first)
+     * @param accumulator function combining the running result with each element
+     * @return a stream of all intermediate accumulation results
      */
-    public <R> Stream<R> scan(R identity, BiFunction<R, T, R> accumulator) {
+    public <R> FluentStream<R> scan(R identity, BiFunction<R, T, R> accumulator) {
         List<R> results = new ArrayList<>();
         results.add(identity);
         stream.forEach(el -> results.add(accumulator.apply(results.get(results.size() - 1), el)));
-        return results.stream();
+        return of(results.stream());
     }
 
     /**
@@ -103,19 +133,21 @@ public final class FluentStream<T> {
      *
      * <pre>{@code
      * FluentStream.of(1, 2, 3, 4, 5).chunk(2)
-     * // → [1,2], [3,4], [5]
+     * // -> [1,2], [3,4], [5]
      * }</pre>
      *
+     * @param size the maximum size of each chunk; must be positive
+     * @return a stream of lists, each of at most {@code size} elements
      * @throws IllegalArgumentException if size is not positive
      */
-    public Stream<List<T>> chunk(int size) {
+    public FluentStream<List<T>> chunk(int size) {
         if (size <= 0) throw new IllegalArgumentException("chunk size must be positive, got: " + size);
         List<T> all = stream.collect(Collectors.toList());
         List<List<T>> chunks = new ArrayList<>();
         for (int i = 0; i < all.size(); i += size) {
             chunks.add(List.copyOf(all.subList(i, Math.min(i + size, all.size()))));
         }
-        return chunks.stream();
+        return of(chunks.stream());
     }
 
     /**
@@ -123,19 +155,21 @@ public final class FluentStream<T> {
      *
      * <pre>{@code
      * FluentStream.of(1, 2, 3, 4, 5).window(3)
-     * // → [1,2,3], [2,3,4], [3,4,5]
+     * // -> [1,2,3], [2,3,4], [3,4,5]
      * }</pre>
      *
+     * @param size the width of each window; must be positive
+     * @return a stream of overlapping sublists of length {@code size}
      * @throws IllegalArgumentException if size is not positive
      */
-    public Stream<List<T>> window(int size) {
+    public FluentStream<List<T>> window(int size) {
         if (size <= 0) throw new IllegalArgumentException("window size must be positive, got: " + size);
         List<T> all = stream.collect(Collectors.toList());
         List<List<T>> windows = new ArrayList<>();
         for (int i = 0; i <= all.size() - size; i++) {
             windows.add(List.copyOf(all.subList(i, i + size)));
         }
-        return windows.stream();
+        return of(windows.stream());
     }
 
     /**
@@ -143,10 +177,12 @@ public final class FluentStream<T> {
      *
      * <pre>{@code
      * FluentStream.of(1, 1, 2, 3, 3, 1).groupConsecutive()
-     * // → [1,1], [2], [3,3], [1]
+     * // -> [1,1], [2], [3,3], [1]
      * }</pre>
+     *
+     * @return a stream of lists, each containing a run of equal consecutive elements
      */
-    public Stream<List<T>> groupConsecutive() {
+    public FluentStream<List<T>> groupConsecutive() {
         return groupConsecutiveBy(Function.identity());
     }
 
@@ -156,10 +192,14 @@ public final class FluentStream<T> {
      * <pre>{@code
      * FluentStream.of("apple","apricot","banana","blueberry")
      *     .groupConsecutiveBy(s -> s.charAt(0))
-     * // → ["apple","apricot"], ["banana","blueberry"]
+     * // -> ["apple","apricot"], ["banana","blueberry"]
      * }</pre>
+     *
+     * @param <K>   the key type used to determine group boundaries
+     * @param keyFn function that extracts the grouping key from each element
+     * @return a stream of lists, each containing elements with the same consecutive key
      */
-    public <K> Stream<List<T>> groupConsecutiveBy(Function<T, K> keyFn) {
+    public <K> FluentStream<List<T>> groupConsecutiveBy(Function<T, K> keyFn) {
         List<List<T>> groups  = new ArrayList<>();
         List<T>       current = new ArrayList<>();
         Object[]      lastKey = {null};
@@ -175,7 +215,7 @@ public final class FluentStream<T> {
             current.add(el);
         });
         if (!current.isEmpty()) groups.add(List.copyOf(current));
-        return groups.stream();
+        return of(groups.stream());
     }
 
     /**
@@ -183,8 +223,11 @@ public final class FluentStream<T> {
      *
      * <pre>{@code
      * FluentStream.of(1, 2, 3, 4, 5).takeUntil(n -> n >= 3)
-     * // → 1, 2
+     * // -> 1, 2
      * }</pre>
+     *
+     * @param predicate the stop condition; the first element matching it is excluded
+     * @return a stream of elements before the first predicate match
      */
     public FluentStream<T> takeUntil(Predicate<T> predicate) {
         return of(stream.takeWhile(predicate.negate()));
@@ -195,8 +238,11 @@ public final class FluentStream<T> {
      *
      * <pre>{@code
      * FluentStream.of("apple","apricot","banana").distinctBy(s -> s.charAt(0))
-     * // → "apple", "banana"
+     * // -> "apple", "banana"
      * }</pre>
+     *
+     * @param keyFn function that extracts the key used for deduplication
+     * @return a stream with duplicates (by key) removed, preserving encounter order
      */
     public FluentStream<T> distinctBy(Function<T, ?> keyFn) {
         Set<Object> seen = new LinkedHashSet<>();
@@ -205,25 +251,46 @@ public final class FluentStream<T> {
 
     // ── Standard Stream pass-throughs ─────────────────────────────────────────
 
+    /** @see java.util.stream.Stream#filter(Predicate) */
     public FluentStream<T> filter(Predicate<T> predicate)              { return of(stream.filter(predicate)); }
+    /** @see java.util.stream.Stream#map(Function) */
     public <R> FluentStream<R> map(Function<T, R> mapper)              { return of(stream.map(mapper)); }
+    /** @see java.util.stream.Stream#flatMap(Function) */
     public <R> FluentStream<R> flatMap(Function<T, Stream<R>> mapper)  { return of(stream.flatMap(mapper)); }
+    /** @see java.util.stream.Stream#sorted() */
     public FluentStream<T> sorted()                                     { return of(stream.sorted()); }
+    /** @see java.util.stream.Stream#sorted(Comparator) */
     public FluentStream<T> sorted(Comparator<T> comparator)            { return of(stream.sorted(comparator)); }
+    /** @see java.util.stream.Stream#limit(long) */
     public FluentStream<T> limit(long maxSize)                          { return of(stream.limit(maxSize)); }
+    /** @see java.util.stream.Stream#skip(long) */
     public FluentStream<T> skip(long n)                                 { return of(stream.skip(n)); }
+    /** @see java.util.stream.Stream#peek(Consumer) */
     public FluentStream<T> peek(Consumer<T> action)                     { return of(stream.peek(action)); }
+    /** @see java.util.stream.Stream#forEach(Consumer) */
     public void forEach(Consumer<T> action)                             { stream.forEach(action); }
+    /** @see java.util.stream.Stream#toList() */
     public List<T> toList()                                             { return stream.toList(); }
+    /** @see java.util.stream.Stream#collect(Collector) */
     public <R, A> R collect(Collector<? super T, A, R> collector)      { return stream.collect(collector); }
+    /** @see java.util.stream.Stream#findFirst() */
     public Optional<T> findFirst()                                      { return stream.findFirst(); }
+    /** @see java.util.stream.Stream#reduce(BinaryOperator) */
     public Optional<T> reduce(BinaryOperator<T> accumulator)           { return stream.reduce(accumulator); }
+    /** @see java.util.stream.Stream#reduce(Object, BinaryOperator) */
     public T reduce(T identity, BinaryOperator<T> accumulator)         { return stream.reduce(identity, accumulator); }
+    /** @see java.util.stream.Stream#count() */
     public long count()                                                 { return stream.count(); }
+    /** @see java.util.stream.Stream#anyMatch(Predicate) */
     public boolean anyMatch(Predicate<T> predicate)                    { return stream.anyMatch(predicate); }
+    /** @see java.util.stream.Stream#allMatch(Predicate) */
     public boolean allMatch(Predicate<T> predicate)                    { return stream.allMatch(predicate); }
+    /** @see java.util.stream.Stream#noneMatch(Predicate) */
     public boolean noneMatch(Predicate<T> predicate)                   { return stream.noneMatch(predicate); }
 
-    /** Unwraps the underlying {@link Stream} for use with standard Java APIs. */
+    /**
+     * Unwraps the underlying {@link Stream} for use with standard Java APIs.
+     * @return the underlying {@link Stream}
+     */
     public Stream<T> toStream()                                         { return stream; }
 }

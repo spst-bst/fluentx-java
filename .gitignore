@@ -17,3 +17,6 @@ Thumbs.db
 gradle.properties
 *.gpg
 *.asc
+
+# Benchmark generated sources
+fluentx-benchmarks/build/

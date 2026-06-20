@@ -1,14 +1,13 @@
 package io.fluentx.benchmarks;
 
 import io.fluentx.streams.FluentStream;
-import org.openjdk.jmh.annotations.*;
-import org.openjdk.jmh.infra.Blackhole;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
 
 /**
  * Benchmarks FluentStream.scan() vs a manual ArrayList accumulation.

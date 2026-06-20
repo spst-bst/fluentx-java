@@ -1,16 +1,15 @@
 package io.fluentx.gatherers;
 
+import static io.fluentx.gatherers.FluentGatherers.*;
+import static org.junit.jupiter.api.Assertions.*;
+
 import io.fluentx.streams.Indexed;
 import io.fluentx.streams.Pair;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
-
-import static io.fluentx.gatherers.FluentGatherers.*;
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
 class FluentGatherersTest {
 

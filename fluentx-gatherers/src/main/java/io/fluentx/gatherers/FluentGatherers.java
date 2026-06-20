@@ -2,7 +2,6 @@ package io.fluentx.gatherers;
 
 import io.fluentx.streams.Indexed;
 import io.fluentx.streams.Pair;
-
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;

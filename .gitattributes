@@ -1,0 +1,26 @@
+# Normalize all text files to LF in the repository.
+* text=auto eol=lf
+
+# Source and config files are always LF.
+*.java   text eol=lf
+*.kts    text eol=lf
+*.kt     text eol=lf
+*.gradle text eol=lf
+*.xml    text eol=lf
+*.yml    text eol=lf
+*.yaml   text eol=lf
+*.md     text eol=lf
+*.properties text eol=lf
+
+# Windows-specific scripts must keep CRLF.
+*.bat        text eol=crlf
+gradlew.bat  text eol=crlf
+
+# The Unix wrapper script stays LF and executable.
+gradlew text eol=lf
+
+# Binary artifacts — never touch.
+*.jar binary
+*.png binary
+*.gif binary
+*.ico binary

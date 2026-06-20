@@ -2,16 +2,14 @@ package io.fluentx.benchmarks;
 
 import io.fluentx.streams.FluentStream;
 import io.fluentx.streams.Pair;
-import org.openjdk.jmh.annotations.*;
-import org.openjdk.jmh.infra.Blackhole;
-
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
 
 /**
  * Benchmarks FluentStream.zip() vs a manual dual-iterator approach.

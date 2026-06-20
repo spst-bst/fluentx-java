@@ -1,7 +1,6 @@
 package io.fluentx.examples;
 
 import io.fluentx.streams.FluentStream;
-
 import java.util.List;
 
 /**

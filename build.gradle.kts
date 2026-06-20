@@ -2,6 +2,7 @@ plugins {
     java
     `maven-publish`
     signing
+    id("com.diffplug.spotless") version "7.0.2" apply false
 }
 
 allprojects {
@@ -14,6 +15,8 @@ subprojects {
         apply(plugin = "java-library")
         apply(plugin = "maven-publish")
         apply(plugin = "signing")
+        apply(plugin = "jacoco")
+        apply(plugin = "com.diffplug.spotless")
 
         java {
             sourceCompatibility = JavaVersion.VERSION_17
@@ -24,6 +27,48 @@ subprojects {
 
         repositories {
             mavenCentral()
+        }
+
+        // ── Formatting hygiene (non-destructive: no AST reformat) ─────────────
+        configure<com.diffplug.gradle.spotless.SpotlessExtension> {
+            java {
+                target("src/**/*.java")
+                importOrder()
+                removeUnusedImports()
+                trimTrailingWhitespace()
+                endWithNewline()
+            }
+        }
+
+        // ── Coverage: report on every test run, gate in `check` ───────────────
+        configure<JacocoPluginExtension> {
+            toolVersion = "0.8.13" // 0.8.13+ parses Java 24 (class file 68) bytecode
+        }
+        tasks.withType<org.gradle.testing.jacoco.tasks.JacocoReport>().configureEach {
+            dependsOn(tasks.named("test"))
+            reports {
+                xml.required.set(true)
+                html.required.set(true)
+            }
+        }
+        // The coverage gate applies only to the published library modules.
+        // fluentx-examples and fluentx-benchmarks carry runnable/JMH code with no
+        // unit tests, so a coverage minimum is not meaningful for them.
+        if (name == "fluentx-streams" || name == "fluentx-gatherers") {
+            tasks.withType<org.gradle.testing.jacoco.tasks.JacocoCoverageVerification>().configureEach {
+                dependsOn(tasks.named("test"))
+                violationRules {
+                    rule {
+                        limit {
+                            counter = "INSTRUCTION"
+                            minimum = "0.90".toBigDecimal()
+                        }
+                    }
+                }
+            }
+            tasks.named("check") {
+                dependsOn("jacocoTestCoverageVerification")
+            }
         }
 
         dependencies {

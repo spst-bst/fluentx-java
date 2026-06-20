@@ -22,14 +22,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Java 21 launches Gradle. The Java 17 (streams/examples/benchmarks) and
-      # Java 24 (gatherers) toolchains are auto-provisioned by the foojay resolver
-      # configured in settings.gradle.kts.
-      - name: Set up JDK 21
+      # Gradle runs on JDK 24, which satisfies the fluentx-gatherers toolchain
+      # (Gradle treats its own running JVM as an available toolchain). The Java 17
+      # modules cross-compile fine from javac 24 via their source/target settings.
+      - name: Set up JDK 24
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 24
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4

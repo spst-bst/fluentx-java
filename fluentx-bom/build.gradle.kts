@@ -9,9 +9,7 @@ description = "FluentX BOM — Bill of Materials for all FluentX modules"
 dependencies {
     constraints {
         api(project(":fluentx-streams"))
-        api(project(":fluentx-collections"))
-        api(project(":fluentx-strings"))
-        api(project(":fluentx-result"))
+        api(project(":fluentx-gatherers"))
     }
 }
 

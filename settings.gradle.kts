@@ -2,9 +2,8 @@ rootProject.name = "fluentx-java"
 
 include(
     "fluentx-streams",
-    "fluentx-collections",
-    "fluentx-strings",
-    "fluentx-result",
+    "fluentx-gatherers",
     "fluentx-bom",
-    "fluentx-examples"
+    "fluentx-examples",
+    "fluentx-benchmarks"
 )

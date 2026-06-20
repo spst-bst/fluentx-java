@@ -9,25 +9,38 @@
 
 | Module | Description |
 |--------|-------------|
-| `fluentx-streams` | `zipWithIndex`, `zip`, `scan`, `chunk`, `window`, `groupConsecutive`, `takeUntil`, `distinctBy` |
-| `fluentx-collections` | *(coming soon)* `mapValues`, `filterKeys`, `groupBy`, `keyBy` |
-| `fluentx-strings` | *(coming soon)* `slugify`, `truncate`, `mask`, `similarity` |
-| `fluentx-result` | *(coming soon)* `Result<T,E>` / `Try<T>` for exception-safe lambdas |
+| `fluentx-streams` | `zipWithIndex`, `zip`, `zipWithNext`, `scan`, `chunk`, `window`, `groupConsecutive`, `takeUntil`, `distinctBy`, `interleave`, `crossProduct`, `partition`, `frequencies` |
+| `fluentx-gatherers` | The same operations as standard `Gatherer`s for `Stream.gather(...)` (requires Java 24+) |
+| `fluentx-bom` | Bill of Materials for aligned dependency versions |
+
+> **Status:** `0.1.0-SNAPSHOT` — pre-release, not yet published to Maven Central.
 
 ## Quick Start
 
+Snapshots are published to the Sonatype snapshots repository:
+
 ```xml
 <!-- Maven -->
+<repositories>
+    <repository>
+        <id>ossrh-snapshots</id>
+        <url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
+    </repository>
+</repositories>
+
 <dependency>
     <groupId>io.fluentx</groupId>
     <artifactId>fluentx-streams</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.0-SNAPSHOT</version>
 </dependency>
 ```
 
 ```kotlin
 // Gradle (Kotlin DSL)
-implementation("io.fluentx:fluentx-streams:0.1.0")
+repositories {
+    maven("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+}
+implementation("io.fluentx:fluentx-streams:0.1.0-SNAPSHOT")
 ```
 
 ## Examples
@@ -68,7 +81,43 @@ FluentStream.of(1, 1, 2, 3, 3, 1)
     .groupConsecutive()
     .forEach(System.out::println);
 // [1, 1]  [2]  [3, 3]  [1]
+
+// Pair each element with its successor
+FluentStream.of(1, 2, 3, 4)
+    .zipWithNext()
+    .forEach(System.out::println);
+// (1,2)  (2,3)  (3,4)
+
+// Partition into matching / non-matching in one pass
+var p = FluentStream.of(1, 2, 3, 4, 5).partition(n -> n % 2 == 0);
+// p.matching() -> [2, 4]   p.notMatching() -> [1, 3, 5]
+
+// Frequency count
+FluentStream.of("a", "b", "a", "c", "a").frequencies();
+// {a=3, b=1, c=1}
 ```
+
+> **Parallel streams:** the stateful operations (`zipWithIndex`, `scan`, `chunk`,
+> `window`, `groupConsecutiveBy`, `distinctBy`, `zip`, `zipWithNext`, `interleave`)
+> require a sequential source and throw `IllegalStateException` on a parallel stream
+> rather than silently degrading. Call `.sequential()` before wrapping if needed.
+
+### Gatherers (JDK 22+)
+
+Prefer native pipelines? `fluentx-gatherers` exposes the same operations as standard
+[`Gatherer`](https://docs.oracle.com/en/java/javase/24/docs/api/java.base/java/util/stream/Gatherer.html)s:
+
+```java
+import static io.fluentx.gatherers.FluentGatherers.*;
+
+List<List<Integer>> windows = Stream.of(1, 2, 3, 4, 5)
+        .gather(window(3))
+        .toList();
+// [1,2,3]  [2,3,4]  [3,4,5]
+```
+
+`Stream.gather(...)` is stable from JDK 24 (JEP 485), so this module requires a
+Java 24+ runtime. The core `fluentx-streams` module stays Java 17 compatible.
 
 ## Building
 

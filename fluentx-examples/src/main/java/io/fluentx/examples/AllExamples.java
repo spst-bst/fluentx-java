@@ -23,6 +23,11 @@ public class AllExamples {
         section("groupConsecutive", GroupConsecutiveExample::main);
         section("takeUntil",    TakeUntilExample::main);
         section("distinctBy",   DistinctByExample::main);
+
+        System.out.println("\n==========================================");
+        System.out.println("   Real-World: Order Processing Pipeline  ");
+        System.out.println("==========================================");
+        OrderProcessingPipeline.main(args);
     }
 
     @FunctionalInterface

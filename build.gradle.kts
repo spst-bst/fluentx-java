@@ -111,7 +111,7 @@ subprojects {
                             developer {
                                 id.set("spst-bst")
                                 name.set("FluentX Contributors")
-                                email.set("saiprasadt@gmail.com")
+                                url.set("https://github.com/spst-bst")
                             }
                         }
                         scm {

@@ -102,7 +102,7 @@ FluentStream.of("a", "b", "a", "c", "a").frequencies();
 > require a sequential source and throw `IllegalStateException` on a parallel stream
 > rather than silently degrading. Call `.sequential()` before wrapping if needed.
 
-### Gatherers (JDK 22+)
+### Gatherers (JDK 24+)
 
 Prefer native pipelines? `fluentx-gatherers` exposes the same operations as standard
 [`Gatherer`](https://docs.oracle.com/en/java/javase/24/docs/api/java.base/java/util/stream/Gatherer.html)s:
@@ -121,10 +121,40 @@ Java 24+ runtime. The core `fluentx-streams` module stays Java 17 compatible.
 
 ## Building
 
+Clone and build with the included Gradle wrapper — no local Gradle install needed:
+
 ```bash
-gradle wrapper
-./gradlew build test
+./gradlew build
 ```
+
+### JDK requirements
+
+FluentX is split by Java version, so what you need depends on which modules you build:
+
+| Module(s) | Requires |
+|-----------|----------|
+| `fluentx-streams`, `fluentx-examples`, `fluentx-benchmarks` | **JDK 17+** |
+| `fluentx-gatherers` | **JDK 24** (uses stable `Stream.gather` / `Gatherer`, JEP 485) |
+
+A full `./gradlew build` needs a **JDK 24** available, because it includes the
+gatherers module. Gradle uses its own running JVM as a toolchain, so the simplest
+setup is to run the build on JDK 24. If you only need the core, build that module
+directly on any JDK 17+:
+
+```bash
+./gradlew :fluentx-streams:build
+```
+
+> **Note:** toolchain auto-provisioning is not configured, so if a full build cannot
+> find a JDK 24, it fails on the gatherers module with a toolchain error. Either run
+> the build on JDK 24, or install one and let Gradle auto-detect it.
+
+## Contributing
+
+Issues and pull requests are welcome on
+[GitHub](https://github.com/spst-bst/fluentx-java). For questions or bug reports,
+please open a GitHub issue rather than emailing — that keeps discussion searchable
+for everyone.
 
 ## License
 
